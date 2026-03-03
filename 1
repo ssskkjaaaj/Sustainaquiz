@@ -3,86 +3,405 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nachhaltigkeits Quiz (mit KI)</title>
+<title>Nachhaltigkeits Quiz</title>
 <style>
-body { font-family: Arial, sans-serif; text-align: center; margin: 40px; background-color: #f4f6f9; }
-h1 { color: #2c3e50; }
-input { padding: 10px; width: 250px; font-size: 16px; }
-button { padding: 10px 15px; font-size: 16px; cursor: pointer; margin-left: 5px; background-color: #3498db; color: white; border: none; border-radius: 5px; }
-button:hover { background-color: #2980b9; }
-#quiz-container { margin-top: 30px; }
-.answer { display: block; margin: 10px auto; padding: 12px; width: 300px; border: 2px solid #ccc; border-radius: 5px; cursor: pointer; background-color: white; transition: 0.3s; }
-.answer:hover { background-color: #eaeaea; }
-.correct { background-color: #2ecc71 !important; color: white; }
-.wrong { background-color: #e74c3c !important; color: white; }
-.loading { color: #3498db; font-style: italic; }
-.error { color: #e74c3c; background-color: #fadbd8; padding: 15px; border-radius: 5px; margin-top: 20px; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    max-width: 700px;
+    width: 100%;
+    padding: 40px;
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.subtitle {
+    text-align: center;
+    color: #7f8c8d;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.quiz-container {
+    display: none;
+}
+
+.quiz-container.active {
+    display: block;
+}
+
+.progress-bar {
+    background: #ecf0f1;
+    height: 8px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.progress {
+    background: #3498db;
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.question {
+    font-size: 20px;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.answers {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.answer {
+    padding: 15px 20px;
+    border: 2px solid #ecf0f1;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+.answer:hover {
+    border-color: #3498db;
+    background: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.answer.selected {
+    border-color: #3498db;
+    background: #e3f2fd;
+}
+
+.answer.correct {
+    background-color: #d4edda !important;
+    border-color: #28a745 !important;
+    color: #155724 !important;
+}
+
+.answer.wrong {
+    background-color: #f8d7da !important;
+    border-color: #dc3545 !important;
+    color: #721c24 !important;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+button {
+    padding: 12px 25px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.btn-next {
+    background: #3498db;
+    color: white;
+    flex: 1;
+}
+
+.btn-next:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.btn-next:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-restart {
+    background: #27ae60;
+    color: white;
+    flex: 1;
+}
+
+.btn-restart:hover {
+    background: #229954;
+}
+
+.results {
+    display: none;
+    text-align: center;
+}
+
+.results.active {
+    display: block;
+}
+
+.score {
+    font-size: 48px;
+    color: #27ae60;
+    margin: 30px 0;
+    font-weight: bold;
+}
+
+.result-message {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.result-details {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    color: #555;
+    line-height: 1.8;
+}
+
+.start-screen {
+    text-align: center;
+    display: none;
+}
+
+.start-screen.active {
+    display: block;
+}
+
+.start-screen h2 {
+    color: #2c3e50;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.start-screen p {
+    color: #7f8c8d;
+    font-size: 16px;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.btn-start {
+    background: #27ae60;
+    color: white;
+    padding: 15px 40px;
+    font-size: 18px;
+}
+
+.btn-start:hover {
+    background: #229954;
+}
+
+.emoji {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+
+.question-counter {
+    color: #95a5a6;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
 </style>
 </head>
 <body>
-<h1>🌿 Nachhaltigkeits Quiz (KI-gesteuert)</h1>
-<p>Gib einen Nachhaltigkeitsbegriff ein und lass die KI eine Quizfrage erstellen!</p>
-<input type="text" id="topicInput" placeholder="z.B. ESG-Ziele, Klimawandel, Kreislaufwirtschaft" onkeypress="if(event.key==='Enter') generateQuiz()">
-<button onclick="generateQuiz()">🤖 Quiz erstellen</button>
-<div id="quiz-container"></div>
+
+<div class="container">
+    <!-- Start Screen -->
+    <div class="start-screen active">
+        <div class="emoji">🌿</div>
+        <h2>Willkommen zum Nachhaltigkeits-Quiz!</h2>
+        <p>Teste dein Wissen über Nachhaltigkeit, Umweltschutz und grüne Technologien. Das Quiz besteht aus 3 Fragen.</p>
+        <button class="btn-start" onclick="startQuiz()">Quiz starten</button>
+    </div>
+
+    <!-- Quiz Container -->
+    <div class="quiz-container">
+        <div class="question-counter" id="questionCounter"></div>
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+        <div class="question" id="question"></div>
+        <div class="answers" id="answers"></div>
+        <div class="button-group">
+            <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Weiter</button>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div class="results">
+        <div class="emoji" id="resultEmoji">🎉</div>
+        <div class="result-message" id="resultMessage"></div>
+        <div class="score" id="scoreDisplay"></div>
+        <div class="result-details" id="resultDetails"></div>
+        <button class="btn-restart" onclick="restartQuiz()">Nochmal spielen</button>
+    </div>
+</div>
 
 <script>
-async function generateQuiz() {
-    const topic = document.getElementById("topicInput").value.trim();
-    const quizContainer = document.getElementById("quiz-container");
-    
-    if (!topic) {
-        alert("Bitte einen Begriff eingeben!");
-        return;
+// Quiz Daten
+const quizzes = [
+    {
+        question: "Was ist ESG (Environmental, Social, Governance)?",
+        answers: [
+            "Ein neues Computerspiel",
+            "Ein Rahmenwerk zur Bewertung der Nachhaltigkeit und Ethik von Unternehmen",
+            "Eine Umweltschutzorganisation",
+            "Ein Energiesparmodell"
+        ],
+        correct: 1,
+        explanation: "ESG ist ein Rahmenwerk zur Bewertung der Nachhaltigkeit und ethischen Standards von Unternehmen."
+    },
+    {
+        question: "Welche Energiequelle ist am nachhaltigsten?",
+        answers: [
+            "Kohle",
+            "Erdöl",
+            "Solarenergie",
+            "Atomkraft"
+        ],
+        correct: 2,
+        explanation: "Solarenergie ist erneuerbar, saubär und produziert keine Treibhausgase."
+    },
+    {
+        question: "Wie lange dauert es, bis ein Kunststoffbeutel in der Natur zersetzt wird?",
+        answers: [
+            "1-2 Jahre",
+            "10-20 Jahre",
+            "100-200 Jahre",
+            "500+ Jahre"
+        ],
+        correct: 2,
+        explanation: "Kunststoffbeutel benötigen etwa 100-200 Jahre, um vollständig zu zersetzt zu werden."
     }
-    
-    quizContainer.innerHTML = '<p class="loading">⏳ Quiz wird mit KI erstellt...</p>';
+];
 
-    try {
-        const response = await fetch("/api/generate-quiz", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ topic })
-        });
+let currentQuestion = 0;
+let score = 0;
+let selectedAnswer = null;
+let answered = false;
 
-        if (!response.ok) {
-            throw new Error(`Server-Fehler: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.error) {
-            quizContainer.innerHTML = `<div class="error">❌ Fehler: ${data.error}</div>`;
-            return;
-        }
-
-        const quiz = data.quiz;
-        quizContainer.innerHTML = `
-            <h2>❓ ${quiz.question}</h2>
-            ${quiz.answers.map((answer, idx) =>
-                `<div class="answer" onclick="checkAnswer(this, ${idx}, ${quiz.correctIndex})">
-                    ${answer}
-                </div>`
-            ).join("")}
-        `;
-    } catch (err) {
-        quizContainer.innerHTML = `<div class="error">❌ Fehler: ${err.message}</div>`;
-        console.error("Fehler:", err);
-    }
+function startQuiz() {
+    document.querySelector('.start-screen').classList.remove('active');
+    document.querySelector('.quiz-container').classList.add('active');
+    currentQuestion = 0;
+    score = 0;
+    selectedAnswer = null;
+    answered = false;
+    showQuestion();
 }
 
-function checkAnswer(element, selectedIndex, correctIndex) {
-    // Deaktiviere alle Antworten
-    document.querySelectorAll(".answer").forEach(a => a.style.pointerEvents = "none");
+function showQuestion() {
+    const quiz = quizzes[currentQuestion];
+    const progressPercent = ((currentQuestion + 1) / quizzes.length) * 100;
     
-    if (selectedIndex === correctIndex) {
-        element.classList.add("correct");
+    document.getElementById('questionCounter').textContent = `Frage ${currentQuestion + 1} von ${quizzes.length}`;
+    document.getElementById('progressBar').style.width = progressPercent + '%';
+    document.getElementById('question').textContent = quiz.question;
+    
+    const answersContainer = document.getElementById('answers');
+    answersContainer.innerHTML = '';
+    
+    quiz.answers.forEach((answer, index) => {
+        const div = document.createElement('div');
+        div.className = 'answer';
+        div.textContent = answer;
+        div.onclick = () => selectAnswer(index);
+        answersContainer.appendChild(div);
+    });
+    
+    selectedAnswer = null;
+    answered = false;
+    document.getElementById('nextBtn').disabled = true;
+}
+
+function selectAnswer(index) {
+    if (answered) return;
+    
+    selectedAnswer = index;
+    const answers = document.querySelectorAll('.answer');
+    answers.forEach((a, i) => {
+        a.classList.remove('selected');
+        if (i === index) {
+            a.classList.add('selected');
+        }
+    });
+    
+    document.getElementById('nextBtn').disabled = false;
+}
+
+function nextQuestion() {
+    if (selectedAnswer === null) return;
+    
+    answered = true;
+    const quiz = quizzes[currentQuestion];
+    const answers = document.querySelectorAll('.answer');
+    
+    // Zeige richtige Antwort
+    answers[quiz.correct].classList.add('correct');
+    
+    // Zeige selected Answer
+    if (selectedAnswer !== quiz.correct) {
+        answers[selectedAnswer].classList.add('wrong');
     } else {
-        element.classList.add("wrong");
-        // Zeige auch die richtige Antwort
-        document.querySelectorAll(".answer")[correctIndex].classList.add("correct");
+        score++;
     }
+    
+    // Deaktiviere alle Antworten
+    answers.forEach(a => a.style.pointerEvents = 'none');
+    
+    // Wechsel Button Text und Funktion
+    const nextBtn = document.getElementById('nextBtn');
+    if (currentQuestion === quizzes.length - 1) {
+        nextBtn.textContent = 'Ergebnisse anzeigen';
+        nextBtn.onclick = showResults;
+    } else {
+        nextBtn.textContent = 'Nächste Frage';
+        nextBtn.onclick = () => {
+            currentQuestion++;
+            showQuestion();
+        };
+    }
+    
+    nextBtn.disabled = false;
 }
-</script>
-</body>
-</html>
+
+function showResults() {
+    document.querySelector('.quiz-container').classList.remove('active');
+    document.querySelector('.results').classList.add('active');
+    
+    const percentage = Math.round((score / quizzes.length) * 100);
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const resultMessage = document.getElementById('resultMessage');
+    const resultEmoji = document.getElementById('resultEmoji');
+    const resultDetails = document.getElementById('resultDetails');
+    
+    scoreDisplay.textContent = `${score}/${quizzes.length} Punkte (`*
