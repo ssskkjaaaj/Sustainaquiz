@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nachhaltigkeits Quiz (mit KI)</title>
+<style>
+body { font-family: Arial, sans-serif; text-align: center; margin: 40px; background-color: #f4f6f9; }
+h1 { color: #2c3e50; }
+input { padding: 10px; width: 250px; font-size: 16px; }
+button { padding: 10px 15px; font-size: 16px; cursor: pointer; margin-left: 5px; background-color: #3498db; color: white; border: none; border-radius: 5px; }
+button:hover { background-color: #2980b9; }
+#quiz-container { margin-top: 30px; }
+.answer { display: block; margin: 10px auto; padding: 12px; width: 300px; border: 2px solid #ccc; border-radius: 5px; cursor: pointer; background-color: white; transition: 0.3s; }
+.answer:hover { background-color: #eaeaea; }
+.correct { background-color: #2ecc71 !important; color: white; }
+.wrong { background-color: #e74c3c !important; color: white; }
+.loading { color: #3498db; font-style: italic; }
+.error { color: #e74c3c; background-color: #fadbd8; padding: 15px; border-radius: 5px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1>🌿 Nachhaltigkeits Quiz (KI-gesteuert)</h1>
+<p>Gib einen Nachhaltigkeitsbegriff ein und lass die KI eine Quizfrage erstellen!</p>
+<input type="text" id="topicInput" placeholder="z.B. ESG-Ziele, Klimawandel, Kreislaufwirtschaft" onkeypress="if(event.key==='Enter') generateQuiz()">
+<button onclick="generateQuiz()">🤖 Quiz erstellen</button>
+<div id="quiz-container"></div>
+
+<script>
+async function generateQuiz() {
+    const topic = document.getElementById("topicInput").value.trim();
+    const quizContainer = document.getElementById("quiz-container");
+    
+    if (!topic) {
+        alert("Bitte einen Begriff eingeben!");
+        return;
+    }
+    
+    quizContainer.innerHTML = '<p class="loading">⏳ Quiz wird mit KI erstellt...</p>';
+
+    try {
+        const response = await fetch("/api/generate-quiz", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ topic })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server-Fehler: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+            quizContainer.innerHTML = `<div class="error">❌ Fehler: ${data.error}</div>`;
+            return;
+        }
+
+        const quiz = data.quiz;
+        quizContainer.innerHTML = `
+            <h2>❓ ${quiz.question}</h2>
+            ${quiz.answers.map((answer, idx) =>
+                `<div class="answer" onclick="checkAnswer(this, ${idx}, ${quiz.correctIndex})">
+                    ${answer}
+                </div>`
+            ).join("")}
+        `;
+    } catch (err) {
+        quizContainer.innerHTML = `<div class="error">❌ Fehler: ${err.message}</div>`;
+        console.error("Fehler:", err);
+    }
+}
+
+function checkAnswer(element, selectedIndex, correctIndex) {
+    // Deaktiviere alle Antworten
+    document.querySelectorAll(".answer").forEach(a => a.style.pointerEvents = "none");
+    
+    if (selectedIndex === correctIndex) {
+        element.classList.add("correct");
+    } else {
+        element.classList.add("wrong");
+        // Zeige auch die richtige Antwort
+        document.querySelectorAll(".answer")[correctIndex].classList.add("correct");
+    }
+}
+</script>
+</body>
+</html>
